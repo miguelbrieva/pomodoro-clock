@@ -14,7 +14,9 @@ code {
     monospace;
 }
 
-#root {
-  max-width: 400px;
-  margin: 0 auto;
+.App-container {
+  padding: 20px;
+  margin: 20px;
+  border: 1px solid tomato;
+  border-radius: 10px;
 }
