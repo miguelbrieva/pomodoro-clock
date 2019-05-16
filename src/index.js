@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import './index.sass';
 
 const TimerSelects = props => (
-  // Onclick set the timer
   <React.Fragment>
     <button
       className='select-pomo'
@@ -33,29 +32,6 @@ const Timer = props => (
   </h1>
 );
 
-// const TimerControls = props => (
-//   <React.Fragment>
-//     <button
-//       className='start'
-//       onClick={() => props.onControlerClick({ type: 'START' })}
-//     >
-//       Start
-//     </button>
-//     <button
-//       className='pause'
-//       onClick={() => props.onControlerClick({ type: 'PAUSE' })}
-//     >
-//       Pause
-//     </button>
-//     <button
-//       className='reset'
-//       onClick={() => props.onControlerClick({ type: 'RESET' })}
-//     >
-//       Reset
-//     </button>
-//   </React.Fragment>
-// );
-
 const TimerControler = props => {
   const { control, current, children, onControlerClick } = props;
 
@@ -63,7 +39,6 @@ const TimerControler = props => {
     return <span>{children}</span>;
   } else {
     return (
-      // <button onClick={onControlerClick({ type: control })}>{children}</button>
       <button
         onClick={() => {
           onControlerClick({ type: control });
@@ -91,9 +66,8 @@ class App extends React.Component {
     const startTimer = () => {
       this.tick = setInterval(
         x => {
-          console.log('state: ', x.state);
           let time = parseInt(x.state.min) * 60 + parseInt(x.state.sec);
-          console.log(time);
+          console.log(x, time);
 
           if (time <= 1) {
             clearInterval(this.tick);
@@ -192,7 +166,6 @@ class App extends React.Component {
       <React.Fragment>
         <TimerSelects onSelectorClick={this.handleSelect} />
         <Timer min={this.state.min} sec={this.state.sec} />
-        {/* <TimerControls onControlerClick={this.handleControler} /> */}
         <div>
           <TimerControler
             control='START'
