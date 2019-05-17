@@ -1,26 +1,31 @@
+@import url('https://fonts.googleapis.com/css?family=PT+Mono')
+
 * 
   box-sizing: border-box
   margin: 0
   padding: 0
 
 body 
-  margin: 0
   font-size: 14px
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen'
+  color: dimgray
 
 code 
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace
 
-
-@import url('https://fonts.googleapis.com/css?family=PT+Mono')
-
-.Timer 
-  font-family: 'PT Mono', monospace
-  color: lightGray
-
-.App-container 
-  padding: 20px
-  margin: 20px
+#root
   border: 1px solid lightgray
-  border-radius: 10px
+  text-align: center
 
+button, .button-inactive
+  padding: 10px
+  margin: 3px
+  border: 1px solid lightgray
+  font-size: 1rem
+  color: dimgray
+
+.button-inactive
+  color: lightgray
+
+.Display-container
+  color: lightgray

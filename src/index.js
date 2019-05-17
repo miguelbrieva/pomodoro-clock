@@ -2,41 +2,43 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.sass';
 
-const TimerSelects = props => (
-  <React.Fragment>
+const DurationSelector = props => (
+  <div className='timerSelect-container'>
     <button
       className='select-pomo'
-      onClick={() => props.onSelectorClick({ type: 'POMO' })}
+      onClick={() => props.onDurationSelectorClick({ type: 'POMO' })}
     >
       Pomo
     </button>
     <button
       className='select-break'
-      onClick={() => props.onSelectorClick({ type: 'BREAK' })}
+      onClick={() => props.onDurationSelectorClick({ type: 'BREAK' })}
     >
       Break
     </button>
     <button
       className='select-largeBreak'
-      onClick={() => props.onSelectorClick({ type: 'LARGE_BREAK' })}
+      onClick={() => props.onDurationSelectorClick({ type: 'LARGE_BREAK' })}
     >
       Large break
     </button>
-  </React.Fragment>
+  </div>
 );
 
-const Timer = props => (
-  <h1 className='Timer'>
-    {props.min < 10 ? '0' + props.min : props.min}:
-    {props.sec < 10 ? '0' + props.sec : props.sec}
-  </h1>
+const Display = props => (
+  <div className='clock'>
+    <h1 className='Timer'>
+      {props.min < 10 ? '0' + props.min : props.min}:
+      {props.sec < 10 ? '0' + props.sec : props.sec}
+    </h1>
+  </div>
 );
 
-const TimerControler = props => {
+const TimeControler = props => {
   const { control, current, children, onControlerClick } = props;
 
-  if (control === current) {
-    return <span>{children}</span>;
+  if (control === current[0] || control === current[1]) {
+    return <span className='button-inactive'>{children}</span>;
   } else {
     return (
       <button
@@ -53,85 +55,79 @@ const TimerControler = props => {
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      min: 25,
-      sec: 0,
-      lastSelector: null,
-      currentControler: null,
+
+    this.timers = {
+      pomodoro: 25,
+      smallBreak: 5,
+      largeBreak: 10,
     };
+
+    this.state = {
+      min: this.timers.pomodoro,
+      sec: 0,
+      lastSelector: this.timers.pomodoro,
+      offControler: ['PAUSE', 'RESET'],
+      isCountingDown: false,
+    };
+
     this.tick = null;
   }
 
-  timeControl = action => {
-    const startTimer = () => {
-      this.tick = setInterval(
-        x => {
-          let time = parseInt(x.state.min) * 60 + parseInt(x.state.sec);
-          console.log(x, time);
+  startTimer = () => {
+    this.tick = setInterval(() => {
+      let { min, sec } = this.state;
+      let time = parseInt(min) * 60 + parseInt(sec);
 
-          if (time <= 1) {
-            clearInterval(this.tick);
-            document.getElementById('alarm').play();
-            this.setState({ currentControler: null });
-          }
-
-          time--;
-          // conversión:
-          const min = Math.floor(time / 60);
-          const sec = time % 60;
-          this.setState({ min: min, sec: sec });
-        },
-        1000,
-        this
-      );
-    };
-
-    switch (action) {
-      case 'START':
-        startTimer();
-        this.setState({ currentControler: 'START' });
-        break;
-      case 'PAUSE':
+      if (time <= 1) {
         clearInterval(this.tick);
-        this.setState({ currentControler: 'PAUSE' });
-        break;
-      case 'RESET':
-        clearInterval(this.tick);
+        document.getElementById('alarm').play();
         this.setState({
-          min: this.state.lastSelector,
-          sec: 0,
-          currentControler: 'RESET',
+          offControler: ['START', 'PAUSE'],
+          isCountingDown: false,
         });
-        break;
-      default:
-        break;
-    }
+      }
+      time--;
+
+      // conversión:
+      min = Math.floor(time / 60);
+      sec = time % 60;
+      this.setState({ min: min, sec: sec });
+    }, 1000);
   };
 
-  handleSelect = select => {
-    switch (select.type) {
+  handleDurationSelector = ({ type }) => {
+    const { pomodoro, smallBreak, largeBreak } = this.timers;
+
+    let offControler;
+    if (this.state.isCountingDown) {
+      offControler = ['START'];
+    } else {
+      offControler = ['PAUSE', 'RESET'];
+    }
+
+    switch (type) {
       case 'POMO':
         this.setState({
-          min: 25,
+          min: pomodoro,
           sec: 0,
-          lastSelector: 25,
-          currentControler: null,
+          lastSelector: pomodoro,
+          offControler,
         });
         break;
       case 'BREAK':
         this.setState({
-          min: 0,
-          sec: 5,
-          lastSelector: 5,
-          currentControler: null,
+          min: smallBreak,
+          sec: 0,
+          lastSelector: smallBreak,
+          offControler,
         });
         break;
       case 'LARGE_BREAK':
         this.setState({
-          min: 10,
+          min: largeBreak,
           sec: 0,
-          lastSelector: 10,
-          currentControler: null,
+          lastSelector: largeBreak,
+          offControler,
         });
         break;
       default:
@@ -139,22 +135,47 @@ class App extends React.Component {
     }
   };
 
-  handleControler = handler => {
-    switch (handler.type) {
+  handleControl = action => {
+    switch (action) {
       case 'START':
-        console.log(handler);
-        this.timeControl('START');
-        this.setState({ currentControler: 'START' });
+        this.startTimer();
+        this.setState({ offControler: ['START'], isCountingDown: true });
         break;
       case 'PAUSE':
-        console.log(handler);
-        this.timeControl('PAUSE');
-        this.setState({ currentControler: 'PAUSE' });
+        clearInterval(this.tick);
+        this.setState({ offControler: ['PAUSE'], isCountingDown: false });
         break;
       case 'RESET':
-        console.log(handler);
-        this.timeControl('RESET');
-        this.setState({ currentControler: 'RESET' });
+        if (this.state.isCountingDown) {
+          this.setState({
+            min: this.state.lastSelector,
+            sec: 0,
+            // offControler: ['START'],
+          });
+        } else {
+          // clearInterval(this.tick);
+          this.setState({
+            min: this.state.lastSelector,
+            sec: 0,
+            offControler: ['RESET', 'PAUSE'],
+          });
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
+  handleCountdownControler = handler => {
+    switch (handler.type) {
+      case 'START':
+        this.handleControl('START');
+        break;
+      case 'PAUSE':
+        this.handleControl('PAUSE');
+        break;
+      case 'RESET':
+        this.handleControl('RESET');
         break;
       default:
         break;
@@ -163,39 +184,43 @@ class App extends React.Component {
 
   render() {
     return (
-      <React.Fragment>
-        <TimerSelects onSelectorClick={this.handleSelect} />
-        <Timer min={this.state.min} sec={this.state.sec} />
-        <div>
-          <TimerControler
+      <div className='pomodoro-container'>
+        <div className='DurationSelector-container'>
+          <DurationSelector
+            onDurationSelectorClick={this.handleDurationSelector}
+          />
+        </div>
+        <div className='Display-container'>
+          <Display min={this.state.min} sec={this.state.sec} />
+        </div>
+        <div className='TimerControler-container'>
+          <TimeControler
             control='START'
-            current={this.state.currentControler}
-            onControlerClick={this.handleControler}
+            current={this.state.offControler}
+            onControlerClick={this.handleCountdownControler}
           >
             Start
-          </TimerControler>
-          <TimerControler
+          </TimeControler>
+          <TimeControler
             control='PAUSE'
-            current={this.state.currentControler}
-            onControlerClick={this.handleControler}
+            current={this.state.offControler}
+            onControlerClick={this.handleCountdownControler}
           >
             Pause
-          </TimerControler>
-          <TimerControler
+          </TimeControler>
+          <TimeControler
             control='RESET'
-            current={this.state.currentControler}
-            onControlerClick={this.handleControler}
+            current={this.state.offControler}
+            onControlerClick={this.handleCountdownControler}
           >
             Reset
-          </TimerControler>
+          </TimeControler>
         </div>
-      </React.Fragment>
+      </div>
     );
   }
 }
 
+////////////////////////////////////////////////////////////////////////////
 ReactDOM.render(<App />, document.getElementById('root'));
-
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
