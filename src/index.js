@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.sass';
 
 const DurationSelector = props => (
-  <div className='timerSelect-container'>
+  <React.Fragment>
     <button
       className='select-pomo'
       onClick={() => props.onDurationSelectorClick({ type: 'POMO' })}
@@ -22,16 +22,14 @@ const DurationSelector = props => (
     >
       Large break
     </button>
-  </div>
+  </React.Fragment>
 );
 
 const Display = props => (
-  <div className='clock'>
-    <h1 className='Timer'>
-      {props.min < 10 ? '0' + props.min : props.min}:
-      {props.sec < 10 ? '0' + props.sec : props.sec}
-    </h1>
-  </div>
+  <h1 className='Timer'>
+    {props.min < 10 ? '0' + props.min : props.min}:
+    {props.sec < 10 ? '0' + props.sec : props.sec}
+  </h1>
 );
 
 const TimeControler = props => {
@@ -57,7 +55,7 @@ class App extends React.Component {
     super(props);
 
     this.timers = {
-      pomodoro: 25,
+      pomodoro: 1,
       smallBreak: 5,
       largeBreak: 10,
     };
@@ -80,7 +78,9 @@ class App extends React.Component {
 
       if (time <= 1) {
         clearInterval(this.tick);
-        document.getElementById('alarm').play();
+        const alarm = document.getElementById('alarm');
+        alarm.play();
+        setTimeout(() => alarm.pause(), 4000);
         this.setState({
           offControler: ['START', 'PAUSE'],
           isCountingDown: false,
